@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decrypt Message</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container card-hover">
+        <h1><span class="icon">🔓</span>Decrypt Message</h1>
+        
+        <div class="security-info">
+            <h4><span class="icon">📝</span>Decryption Instructions:</h4>
+            <ul>
+                <li>Paste the encrypted message you received</li>
+                <li>Enter the 6-digit OTP sent to your phone</li>
+                <li>OTP expires in 10 minutes from generation</li>
+                <li>Each OTP can only be used once</li>
+            </ul>
+        </div>
+
+        <!-- Display messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" id="decryptForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="encrypted"><span class="icon">🔒</span>Encrypted Message:</label>
+                <textarea 
+                    id="encrypted" 
+                    name="encrypted" 
+                    placeholder="Paste the encrypted message here..."
+                    required
+                    rows="6"
+                ></textarea>
+                <small style="color: #666;">Paste the entire encrypted message exactly as received</small>
+            </div>
+
+            <div class="form-group">
+                <label for="otp"><span class="icon">🔑</span>Enter OTP:</label>
+                <input 
+                    type="text" 
+                    id="otp" 
+                    name="otp" 
+                    placeholder="Enter 6-digit OTP"
+                    required
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    title="Enter the 6-digit OTP sent to your phone"
+                    style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: bold;"
+                />
+                <small style="color: #666;">6-digit code sent to your phone</small>
+            </div>
+
+            <button type="submit" id="decryptBtn">
+                <span class="icon">🔓</span>Decrypt Message
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'encryption:index' %}" class="nav-link">
+                <span class="icon">🔒</span>Go to Encryption
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Secure message decryption with SMS-based OTP verification</p>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <p>Decrypting message...</p>
+    </div>
+
+    <script>
+        // Show loading animation on form submit
+        document.getElementById('decryptForm').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('decryptBtn').disabled = true;
+            document.getElementById('decryptBtn').innerHTML = '<span class="icon">⏳</span>Decrypting...';
+        });
+
+        // Format OTP input
+        document.getElementById('otp').addEventListener('input', function(e) {
+            let value = e.target.value;
+            // Remove any non-digit characters
+            value = value.replace(/[^\d]/g, '');
+            
+            // Limit to 6 digits
+            if (value.length > 6) {
+                value = value.substring(0, 6);
+            }
+            
+            e.target.value = value;
+            
+            // Auto-submit when 6 digits are entered
+            if (value.length === 6) {
+                // Add slight delay for better UX
+                setTimeout(function() {
+                    document.getElementById('decryptBtn').focus();
+                }, 100);
+            }
+        });
+
+        // Allow paste operation for encrypted message
+        document.getElementById('encrypted').addEventListener('paste', function(e) {
+            // Clear any existing content
+            this.value = '';
+            
+            // Show feedback
+            setTimeout(function() {
+                const messageElement = document.getElementById('encrypted');
+                if (messageElement.value.trim()) {
+                    messageElement.style.borderColor = '#28a745';
+                    messageElement.style.background = '#f8fff8';
+                    
+                    // Reset after 2 seconds
+                    setTimeout(function() {
+                        messageElement.style.borderColor = '#e0e0e0';
+                        messageElement.style.background = '#f8f9fa';
+                    }, 2000);
+                }
+            }, 100);
+        });
+
+        // Auto-focus on OTP input when encrypted message is filled
+        document.getElementById('encrypted').addEventListener('input', function() {
+            if (this.value.trim().length > 50) { // Encrypted messages are typically long
+                document.getElementById('otp').focus();
+            }
+        });
+
+        // Number keypad optimization for mobile
+        document.getElementById('otp').addEventListener('focus', function() {
+            this.setAttribute('inputmode', 'numeric');
+        });
+    </script>
+</body>
+</html>

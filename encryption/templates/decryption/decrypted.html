@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Decrypted Successfully</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container card-hover">
+        <h1><span class="icon">✅</span>Message Decrypted Successfully</h1>
+        
+        <div class="result-container">
+            <h3><span class="icon">🔓</span>Decrypted Message:</h3>
+            <div class="decrypted-message" id="decryptedMessage">{{ decrypted_message }}</div>
+            <button class="copy-btn" onclick="copyToClipboard('decryptedMessage')">
+                <span class="icon">📋</span>Copy Message
+            </button>
+        </div>
+
+        <div class="result-container">
+            <div class="status-message status-success pulse-success">
+                <span class="icon">✅</span>
+                <strong>Success!</strong> Message decrypted successfully from phone {{ phone }}.
+                <br><small>The OTP has been marked as used and cannot be reused.</small>
+            </div>
+        </div>
+
+        <div class="security-info">
+            <h4><span class="icon">🛡️</span>Security Information:</h4>
+            <ul>
+                <li><strong>OTP Used:</strong> This OTP has been consumed and cannot be used again</li>
+                <li><strong>Secure Decryption:</strong> Message was decrypted using AES-256 encryption</li>
+                <li><strong>No Trace:</strong> The encryption key has been securely discarded</li>
+                <li><strong>Private:</strong> This message is now only stored in your browser temporarily</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'encryption:index' %}" class="nav-link">
+                <span class="icon">🔒</span>Encrypt New Message
+            </a>
+            <a href="{% url 'encryption:decrypt' %}" class="nav-link">
+                <span class="icon">🔓</span>Decrypt Another Message
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Message decrypted with AES-256 • OTP verified and consumed</p>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success feedback
+                const originalText = element.innerHTML;
+                element.innerHTML = '<span class="icon">✅</span>Copied to clipboard!';
+                element.style.background = '#b8e6b8';
+                element.style.color = '#155724';
+                
+                setTimeout(function() {
+                    element.innerHTML = originalText;
+                    element.style.background = '#d5f4e6';
+                    element.style.color = '#155724';
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                alert('Message copied to clipboard!');
+            });
+        }
+
+        // Auto-select decrypted message on click
+        document.getElementById('decryptedMessage').addEventListener('click', function() {
+            if (window.getSelection) {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(this);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        });
+
+        // Add celebration animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            container.style.animation = 'pulse-green 1s ease-in-out';
+            
+            // Add confetti effect (simple version)
+            setTimeout(function() {
+                createConfetti();
+            }, 500);
+        });
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+            const confettiCount = 50;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '-10px';
+                confetti.style.borderRadius = '50%';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(function() {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Add CSS for confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

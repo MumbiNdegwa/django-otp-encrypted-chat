@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Encrypted Successfully</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container card-hover">
+        <h1><span class="icon">✅</span>Message Encrypted Successfully</h1>
+        
+        <div class="result-container">
+            <h3><span class="icon">🔒</span>Encrypted Message:</h3>
+            <div class="encrypted-message" id="encryptedMessage">{{ encrypted_message }}</div>
+            <button class="copy-btn" onclick="copyToClipboard('encryptedMessage')">
+                <span class="icon">📋</span>Copy Encrypted Message
+            </button>
+        </div>
+
+        <div class="result-container">
+            <h3><span class="icon">📱</span>SMS Status:</h3>
+            <div class="status-message {% if sms_success %}status-success{% else %}status-error{% endif %}">
+                <strong>Phone:</strong> {{ phone }}<br>
+                <strong>Status:</strong> {{ sms_status }}
+            </div>
+            
+            {% if sms_success %}
+                <div class="status-message status-success pulse-success">
+                    <span class="icon">✅</span>
+                    <strong>Success!</strong> OTP has been sent to {{ phone }}. 
+                    The receiver can now decrypt the message using the OTP.
+                </div>
+            {% else %}
+                <div class="status-message status-error">
+                    <span class="icon">❌</span>
+                    <strong>SMS Failed!</strong> Please check the phone number and try again.
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="security-info">
+            <h4><span class="icon">⚠️</span>Important Security Notes:</h4>
+            <ul>
+                <li><strong>Share the encrypted message safely:</strong> You can copy it and send via email, messaging apps, or any channel.</li>
+                <li><strong>OTP expires in 10 minutes:</strong> The receiver must decrypt within this time limit.</li>
+                <li><strong>One-time use:</strong> Each OTP can only be used once for decryption.</li>
+                <li><strong>Keep OTP secret:</strong> Only share the OTP with the intended recipient.</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'encryption:index' %}" class="nav-link">
+                <span class="icon">🔒</span>Encrypt Another Message
+            </a>
+            <a href="{% url 'encryption:decrypt' %}" class="nav-link">
+                <span class="icon">🔓</span>Go to Decryption
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Message encrypted with AES-256 • OTP sent via SMS</p>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success feedback
+                const originalText = element.innerHTML;
+                element.innerHTML = '<span class="icon">✅</span>Copied to clipboard!';
+                element.style.background = '#d4edda';
+                element.style.color = '#155724';
+                
+                setTimeout(function() {
+                    element.innerHTML = originalText;
+                    element.style.background = '#2c3e50';
+                    element.style.color = '#ecf0f1';
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                alert('Encrypted message copied to clipboard!');
+            });
+        }
+
+        // Auto-select encrypted message on click
+        document.getElementById('encryptedMessage').addEventListener('click', function() {
+            if (window.getSelection) {
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(this);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        });
+    </script>
+</body>
+</html>
